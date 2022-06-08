@@ -49,12 +49,14 @@ public class Player {
                   String firstName,
                   String lastName,
                   Gender gender,
-                  String picPath) {
+                  String picPath,
+                  List<Category> categories) {
         this.account = account;
         this.firstName = firstName;
         this.lastName = lastName;
         this.gender = gender;
         this.picPath = picPath;
+        this.categories = categories;
     }
 
     @Override

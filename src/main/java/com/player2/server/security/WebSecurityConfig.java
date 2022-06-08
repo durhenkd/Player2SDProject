@@ -1,5 +1,6 @@
-package com.player2.server;
+package com.player2.server.security;
 
+import com.player2.server.bussiness.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,7 +32,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider auth = new DaoAuthenticationProvider();
         auth.setUserDetailsService(accountService);
-        auth.setPasswordEncoder(new SHAPasswordEncoder());
+        auth.setPasswordEncoder(new BCryptPasswordEncoder());
         return auth;
     }
 
@@ -78,7 +80,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(customFilter)
                 .addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
-                .antMatchers("/api/user/**").hasAuthority(AccountService.USER_AUTHORITY)
-                .antMatchers("/api/admin/**").hasAuthority(AccountService.ADMIN_AUTHORITY);
+                .antMatchers("/api/user/**").hasAuthority(AccountService.PLAYER_AUTHORITY)
+                .antMatchers("/api/admin/**").hasAuthority(AccountService.CLIQUE_AUTHORITY);
     }
 }

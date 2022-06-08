@@ -1,48 +1,139 @@
 package com.player2.server.bussiness;
 
+import com.player2.server.exception.AlreadyExistsException;
 import com.player2.server.exception.InvalidRegisterInputException;
+import com.player2.server.model.Account;
+import com.player2.server.model.Clique;
+import com.player2.server.model.Player;
 import com.player2.server.persistence.AccountRepository;
+import com.player2.server.persistence.CliqueRepository;
+import com.player2.server.persistence.PlayerRepository;
+import com.player2.server.web.CliqueRegistrationDTO;
+import com.player2.server.web.PlayerRegistrationDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class AccountService implements UserDetailsService {
 
-    public static final String USER_AUTHORITY = "USER";
-    public static final String ADMIN_AUTHORITY = "ADMIN";
+    public static final String PLAYER_AUTHORITY = "PLAYER";
+    public static final String CLIQUE_AUTHORITY = "CLIQUE";
 
-    public static final int MINIMUM_PASS_LENGTH = 8;
     private static final Pattern emailPattern = Pattern.compile("^[A-Za-z0-9+_.-]+@[a-zA-z]+\\.[a-z]+$");
     private static final Pattern usernamePattern = Pattern.compile("^[a-zA-Z0-9_.-]+$");
+    private static final Pattern telephonePattern = Pattern.compile("[0-9]+");
+    private static final Pattern passwordPattern = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
 
 
     private final AccountRepository accountRepository;
+    private final PlayerRepository playerRepository;
+    private final CliqueRepository cliqueRepository;
 
     @Autowired
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository,
+                          PlayerRepository playerRepository,
+                          CliqueRepository cliqueRepository) {
         this.accountRepository = accountRepository;
+        this.playerRepository = playerRepository;
+        this.cliqueRepository = cliqueRepository;
     }
+
 
     /***
      * this is a java spring function, avoid
      * @param username the username
      * @return an UserDetails object containing the username, password, and authorities of the user
-     * @throws UsernameNotFoundException
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return null;
+
+        Optional<Account> maybeAccount = Optional.empty();
+        if (isValidEmail(username)) maybeAccount = accountRepository.findByEmail(username);
+        else if (isValidUsername(username)) maybeAccount = accountRepository.findByUsername(username);
+        else if (isValidTelephone(username)) maybeAccount = accountRepository.findByTelephone(username);
+
+        if (maybeAccount.isEmpty()) {
+            log.error("loadByUsername: Couldn't find account " + username);
+            throw new UsernameNotFoundException("Couldn't find account " + username);
+        }
+
+        log.info("loadByUsername: found account " + username);
+
+        Optional<Player> maybePlayer = playerRepository.findByAccount(maybeAccount.get());
+        if (maybePlayer.isPresent()) {
+            log.info("loadByUsername: found player " + maybePlayer.get());
+            return new User(maybeAccount.get().getUsername(), maybeAccount.get().getPassword(), getPlayerAuthorities());
+        }
+
+        Optional<Clique> maybeClique = cliqueRepository.findByAccount(maybeAccount.get());
+        if (maybeClique.isPresent()) {
+            log.info("loadByUsername: found player " + maybeClique.get());
+            return new User(maybeAccount.get().getUsername(), maybeAccount.get().getPassword(), getCliqueAuthorities());
+        }
+
+        log.error("loadByUsername: found account, but couldn't find associated user: " + maybeAccount.get());
+        throw new UsernameNotFoundException("found account, but couldn't find associated user");
+    }
+
+    //TODO javadoc
+    public Clique save(CliqueRegistrationDTO cliqueDTO) throws AlreadyExistsException, InvalidRegisterInputException {
+        Account account = save(new Account(cliqueDTO.getEmail(), cliqueDTO.getTelephone(), cliqueDTO.getUsername(), cliqueDTO.getPassword()));
+        Clique clique = new Clique(account, cliqueDTO.getName(), new ArrayList<>(), new ArrayList<>());
+
+        //TODO search and add categories
+
+        return cliqueRepository.save(clique);
+    }
+
+    //TODO javadoc
+    public Player save(PlayerRegistrationDTO playerDTO) throws AlreadyExistsException, InvalidRegisterInputException {
+        Account account = save(new Account(playerDTO.getEmail(), playerDTO.getTelephone(), playerDTO.getUsername(), playerDTO.getPassword()));
+        Player player = new Player(account, playerDTO.getFirstName(), playerDTO.getLastName(), playerDTO.getGender(), playerDTO.getPicPath(), new ArrayList<>());
+
+        //TODO search and add categories
+
+        return playerRepository.save(player);
+    }
+
+    /***
+     * Validates the input, and persists the user. This function is meant to persist new users.
+     * @param account - the user object as sent by the client
+     * @return the persisted user, containing the id
+     * @throws AlreadyExistsException   when the email, or username already exists
+     * @throws InvalidRegisterInputException when the email or username are in an invalid format
+     */
+    private Account save(Account account)
+            throws AlreadyExistsException, InvalidRegisterInputException {
+        if (usernameExists(account.getUsername()))
+            throw new AlreadyExistsException("Username " + account.getUsername() + " already exists.");
+        if (emailExists(account.getEmail()))
+            throw new AlreadyExistsException("Email " + account.getEmail() + " already exists.");
+        if (telephoneExists(account.getTelephone()))
+            throw new AlreadyExistsException("Telephone " + account.getTelephone() + " already exists.");
+
+        if (!isValidUsername(account.getUsername()))
+            throw new InvalidRegisterInputException(account.getUsername() + " is not a valid username.");
+        if (!isValidEmail(account.getEmail()))
+            throw new InvalidRegisterInputException(account.getEmail() + " is not a valid email.");
+        if (!isValidTelephone(account.getTelephone()))
+            throw new InvalidRegisterInputException(account.getTelephone() + " is not a valid telephone number.");
+        if (!isValidPassword(account.getPassword()))
+            throw new InvalidRegisterInputException(account.getPassword() + " is not a valid password.");
+
+
+        return accountRepository.save(account);
     }
 
     /**
@@ -51,15 +142,15 @@ public class AccountService implements UserDetailsService {
      * It uses the following regex: ^[A-Za-z0-9+_.-]+@[a-zA-z]+\.[a-z]+$
      *
      * @param email the email to be checked
-     * @return true if the string has a good for,. False if otherwise.
+     * @return true if the string has matched, false if otherwise.
      */
-    public static boolean isValidEmail(String email) {
+    private boolean isValidEmail(String email) {
         Matcher matcher = emailPattern.matcher(email);
         return matcher.find();
     }
 
     /**
-     * This function validates a username for the purposes of registering an account.</br>
+     * This function validates that a string is a username.</br>
      * <p>
      * The username must contain only alphanumeric characters and/or "_", ".", and "-".</br>
      * No spaces are allowed.</br>
@@ -67,10 +158,23 @@ public class AccountService implements UserDetailsService {
      * it matches the following regex: ^[a-zA-Z0-1_.-]+$</br>
      *
      * @param username username to be validated.
-     * @return true if the username has a good form, false if otherwise.
+     * @return true if the username has matched, false if otherwise.
      */
-    public static boolean isValidUsername(String username) {
+    private boolean isValidUsername(String username) {
         Matcher matcher = usernamePattern.matcher(username);
+        return matcher.find();
+    }
+
+    /**
+     * This function validates that a string is a telephone number.</br>
+     * <p>
+     * it matches the following regex: [0-9]+</br>
+     *
+     * @param telephone telephone number to be validated.
+     * @return true if the number has matched, false if otherwise.
+     */
+    private boolean isValidTelephone(String telephone) {
+        Matcher matcher = telephonePattern.matcher(telephone);
         return matcher.find();
     }
 
@@ -82,34 +186,37 @@ public class AccountService implements UserDetailsService {
      * - Password should be at least 8 characters long. </br>
      * - Should contain a number.</br>
      * - Should contain a special character.</br>
+     * - Should contain a letter</br>
      *
      * @param password password to be validated
-     * @throws InvalidRegisterInputException
+     * @return true if the password has matched, false if otherwise.
      */
-    public static void isValidPassword(String password) throws InvalidRegisterInputException {
-        if (password.length() < MINIMUM_PASS_LENGTH)
-            throw new InvalidRegisterInputException("Password should be at least " +
-                    AccountService.MINIMUM_PASS_LENGTH +
-                    " characters long. Current length: " + password.length() + ".");
-
-        if (notContainsOneOf(password, "1234567890"))
-            throw new InvalidRegisterInputException("Password should contain at least a number.");
-        if (notContainsOneOf(password, ".?!@#$%^&*()_+-=<>?:[];'|"))
-            throw new InvalidRegisterInputException("Password should contain at least one special character");
+    private boolean isValidPassword(String password) {
+//        if (password.length() < MINIMUM_PASS_LENGTH)
+//            throw new InvalidRegisterInputException("Password should be at least " +
+//                    AccountService.MINIMUM_PASS_LENGTH +
+//                    " characters long. Current length: " + password.length() + ".");
+//
+//        if (notContainsOneOf(password, "1234567890"))
+//            throw new InvalidRegisterInputException("Password should contain at least a number.");
+//        if (notContainsOneOf(password, ".?!@#$%^&*()_+-=<>?:[];'|"))
+//            throw new InvalidRegisterInputException("Password should contain at least one special character");
+        Matcher matcher = passwordPattern.matcher(password);
+        return matcher.find();
     }
 
-    /**
-     * @param string           the string in which we search the characters
-     * @param listOfCharacters the characters to be searched, as a string
-     * @return if at least one of the characters was found in the string
-     */
-    private static boolean notContainsOneOf(String string, String listOfCharacters) {
-        for (char c : listOfCharacters.toCharArray()) {
-            if (string.contains(c + ""))
-                return false;
-        }
-        return true;
-    }
+//    /**
+//     * @param string           the string in which we search the characters
+//     * @param listOfCharacters the characters to be searched, as a string
+//     * @return if at least one of the characters was found in the string
+//     */
+//    private static boolean notContainsOneOf(String string, String listOfCharacters) {
+//        for (char c : listOfCharacters.toCharArray()) {
+//            if (string.contains(c + ""))
+//                return false;
+//        }
+//        return true;
+//    }
 
     /**
      * Checks if a username already exists within a database
@@ -144,25 +251,25 @@ public class AccountService implements UserDetailsService {
     /***
      * @return the authorities for a regular user
      */
-    private Collection<? extends GrantedAuthority> getUserAuthorities() {
-        /**
+    private Collection<? extends GrantedAuthority> getPlayerAuthorities() {
+        /*
          * Basically authorities are a string
          * GrantedAuthority is just a container for such string
          * SimpleGrantedAuthority is just an implementation of GrantedAuthority
          */
-        return new HashSet<>(Set.of(new SimpleGrantedAuthority(USER_AUTHORITY)));
+        return new HashSet<>(Set.of(new SimpleGrantedAuthority(PLAYER_AUTHORITY)));
     }
 
     /***
      *
      * @return the authorities for an admin
      */
-    private Collection<? extends GrantedAuthority> getAdminAuthorities() {
-        /**
+    private Collection<? extends GrantedAuthority> getCliqueAuthorities() {
+        /*
          * Basically authorities are a string
          * GrantedAuthority is just a container for such string
          * SimpleGrantedAuthority is just an implementation of GrantedAuthority
          */
-        return new HashSet<>(Set.of(new SimpleGrantedAuthority(ADMIN_AUTHORITY)));
+        return new HashSet<>(Set.of(new SimpleGrantedAuthority(CLIQUE_AUTHORITY)));
     }
 }

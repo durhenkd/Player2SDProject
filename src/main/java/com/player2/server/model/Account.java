@@ -32,10 +32,16 @@ public class Account {
     @Column(nullable = false, unique = true)
     private String username;
 
-    public Account(String email, String telephone, String username) {
+    @ToString.Include
+    @Setter
+    @Column(nullable = false)
+    private String password;
+
+    public Account(String email, String telephone, String username, String password) {
         this.email = email;
         this.telephone = telephone;
         this.username = username;
+        this.password = password;
     }
 
     // recommended equals and hashcode implementations

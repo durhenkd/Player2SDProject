@@ -1,6 +1,9 @@
 package com.player2.server.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
@@ -10,7 +13,7 @@ import java.util.Objects;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
-public class Account {
+public class Category {
 
     @ToString.Include
     @Id
@@ -20,35 +23,23 @@ public class Account {
     @ToString.Include
     @Setter
     @Column(nullable = false, unique = true)
-    private String email;
+    private String name;
 
-    @ToString.Include
-    @Setter
-    @Column(nullable = false, unique = true)
-    private String telephone;
-
-    @ToString.Include
-    @Setter
-    @Column(nullable = false, unique = true)
-    private String username;
-
-    public Account(String email, String telephone, String username) {
-        this.email = email;
-        this.telephone = telephone;
-        this.username = username;
+    public Category(String name) {
+        this.name = name;
     }
 
-    // recommended equals and hashcode implementations
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Account account = (Account) o;
-        return id != null && Objects.equals(id, account.id);
+        Category category = (Category) o;
+        return id != null && Objects.equals(id, category.id);
     }
 
     @Override
     public int hashCode() {
         return getClass().hashCode();
     }
+
 }

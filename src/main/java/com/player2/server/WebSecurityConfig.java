@@ -14,9 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-import tiberiu.assignment2.bussiness.AccountService;
-import tiberiu.assignment2.filters.CustomAuthenticationFilter;
-import tiberiu.assignment2.filters.CustomAuthorizationFilter;
 
 @Configuration
 @EnableWebSecurity

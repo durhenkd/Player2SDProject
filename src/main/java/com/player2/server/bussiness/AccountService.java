@@ -3,9 +3,11 @@ package com.player2.server.bussiness;
 import com.player2.server.exception.AlreadyExistsException;
 import com.player2.server.exception.InvalidRegisterInputException;
 import com.player2.server.model.Account;
+import com.player2.server.model.Category;
 import com.player2.server.model.Clique;
 import com.player2.server.model.Player;
 import com.player2.server.persistence.AccountRepository;
+import com.player2.server.persistence.CategoryRepository;
 import com.player2.server.persistence.CliqueRepository;
 import com.player2.server.persistence.PlayerRepository;
 import com.player2.server.web.CliqueRegistrationDTO;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -40,14 +43,17 @@ public class AccountService implements UserDetailsService {
     private final AccountRepository accountRepository;
     private final PlayerRepository playerRepository;
     private final CliqueRepository cliqueRepository;
+    private final CategoryRepository categoryRepository;
 
     @Autowired
     public AccountService(AccountRepository accountRepository,
                           PlayerRepository playerRepository,
-                          CliqueRepository cliqueRepository) {
+                          CliqueRepository cliqueRepository,
+                          CategoryRepository categoryRepository) {
         this.accountRepository = accountRepository;
         this.playerRepository = playerRepository;
         this.cliqueRepository = cliqueRepository;
+        this.categoryRepository = categoryRepository;
     }
 
 
@@ -92,7 +98,7 @@ public class AccountService implements UserDetailsService {
         Account account = save(new Account(cliqueDTO.getEmail(), cliqueDTO.getTelephone(), cliqueDTO.getUsername(), cliqueDTO.getPassword()));
         Clique clique = new Clique(account, cliqueDTO.getName(), new ArrayList<>(), new ArrayList<>());
 
-        //TODO search and add categories
+        clique.getCategories().addAll(getCategoriesFromStringsWithInsert(cliqueDTO.getCategories()));
 
         return cliqueRepository.save(clique);
     }
@@ -102,7 +108,7 @@ public class AccountService implements UserDetailsService {
         Account account = save(new Account(playerDTO.getEmail(), playerDTO.getTelephone(), playerDTO.getUsername(), playerDTO.getPassword()));
         Player player = new Player(account, playerDTO.getFirstName(), playerDTO.getLastName(), playerDTO.getGender(), playerDTO.getPicPath(), new ArrayList<>());
 
-        //TODO search and add categories
+        player.getCategories().addAll(getCategoriesFromStringsWithInsert(playerDTO.getCategories()));
 
         return playerRepository.save(player);
     }
@@ -134,6 +140,17 @@ public class AccountService implements UserDetailsService {
 
 
         return accountRepository.save(account);
+    }
+
+    //TODO javadoc
+    private List<Category> getCategoriesFromStringsWithInsert(List<String> categoryNames) {
+        return categoryNames.stream()
+                .map(catName -> {
+
+                    Optional<Category> maybeCategory = categoryRepository.findByName(catName);
+                    return maybeCategory.orElseGet(() -> categoryRepository.save(new Category(catName)));
+
+                }).collect(Collectors.toList());
     }
 
     /**
@@ -192,31 +209,9 @@ public class AccountService implements UserDetailsService {
      * @return true if the password has matched, false if otherwise.
      */
     private boolean isValidPassword(String password) {
-//        if (password.length() < MINIMUM_PASS_LENGTH)
-//            throw new InvalidRegisterInputException("Password should be at least " +
-//                    AccountService.MINIMUM_PASS_LENGTH +
-//                    " characters long. Current length: " + password.length() + ".");
-//
-//        if (notContainsOneOf(password, "1234567890"))
-//            throw new InvalidRegisterInputException("Password should contain at least a number.");
-//        if (notContainsOneOf(password, ".?!@#$%^&*()_+-=<>?:[];'|"))
-//            throw new InvalidRegisterInputException("Password should contain at least one special character");
         Matcher matcher = passwordPattern.matcher(password);
         return matcher.find();
     }
-
-//    /**
-//     * @param string           the string in which we search the characters
-//     * @param listOfCharacters the characters to be searched, as a string
-//     * @return if at least one of the characters was found in the string
-//     */
-//    private static boolean notContainsOneOf(String string, String listOfCharacters) {
-//        for (char c : listOfCharacters.toCharArray()) {
-//            if (string.contains(c + ""))
-//                return false;
-//        }
-//        return true;
-//    }
 
     /**
      * Checks if a username already exists within a database

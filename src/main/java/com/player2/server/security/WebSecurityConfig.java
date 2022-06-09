@@ -1,50 +1,33 @@
 package com.player2.server.security;
 
 import com.player2.server.bussiness.AccountService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig implements ApplicationContextAware {
 
-    final private AccountService accountService; //only for cookie
-
-    @Autowired
-    public WebSecurityConfig(AccountService accountService) {
-        this.accountService = accountService;
-    } //only for cookie
+    private ApplicationContext applicationContext;
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider auth = new DaoAuthenticationProvider();
-        auth.setUserDetailsService(accountService);
-        auth.setPasswordEncoder(new BCryptPasswordEncoder());
+        auth.setUserDetailsService( applicationContext.getBean(AccountService.class) );
+        auth.setPasswordEncoder(    new BCryptPasswordEncoder() );
         return auth;
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(authenticationProvider());
-    }
-
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
     }
 
     @Bean
@@ -60,11 +43,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return new CorsFilter(source);
     }
 
-    @Override
-    protected void configure(final HttpSecurity http) throws Exception {
-
-        var customFilter = new CustomAuthenticationFilter(accountService, authenticationManagerBean());
-        customFilter.setFilterProcessesUrl("/api/login");
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http    .cors().and().csrf().disable()
 
@@ -73,14 +53,30 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
 
                 .authorizeRequests()
-                .antMatchers("/api/login", "/api/register/**")
-                .permitAll()
-
+                .antMatchers("/api/login", "/api/register/**").permitAll()
+                .anyRequest().authenticated()
                 .and()
-                .addFilter(customFilter)
-                .addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
+
+                .formLogin()
+                .loginPage("/login")
+                .permitAll()
+                .and()
+
+                .logout()
+                .permitAll()
+                .and()
+
+                .addFilter( applicationContext.getBean(Player2AuthenticationFilter.class) )
+//                .addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/api/user/**").hasAuthority(AccountService.PLAYER_AUTHORITY)
                 .antMatchers("/api/admin/**").hasAuthority(AccountService.CLIQUE_AUTHORITY);
+
+        return http.build();
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

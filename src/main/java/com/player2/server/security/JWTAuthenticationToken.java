@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Getter
 public class JWTAuthenticationToken implements Authentication {
 
-    private final JWTToken accessToken;
+    private JWTToken accessToken;
     private final JWTToken refreshToken;
 
     public JWTAuthenticationToken(String accessToken, String refreshToken) {
@@ -79,9 +79,16 @@ public class JWTAuthenticationToken implements Authentication {
                 throw new IllegalArgumentException();
 
             if (accessToken.isExpired() && !refreshToken.isExpired())
-                accessToken.refresh(JWTToken.JWT_ACCESS_TOKEN_LIFETIME);
+                accessToken = new JWTToken(
+                        refreshToken.getSubject(),
+                        refreshToken.getIssuer(),
+                        refreshToken.getAuthorities().stream()
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList()),
+                        JWTToken.JWT_ACCESS_TOKEN_LIFETIME
+                );
         } else {
-            accessToken.refresh(0);
+            accessToken.setExpired(false);
         }
     }
 

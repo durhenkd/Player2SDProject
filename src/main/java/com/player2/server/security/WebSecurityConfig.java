@@ -55,7 +55,7 @@ public class WebSecurityConfig implements ApplicationContextAware {
                 .and()
 
                 .addFilterBefore(applicationContext.getBean(Player2AuthenticationFilter.class), UsernamePasswordAuthenticationFilter.class)
-//                .addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
+
                 .authorizeRequests()
                 .antMatchers("/api/player/**").hasAuthority(AccountService.PLAYER_AUTHORITY)
                 .antMatchers("/api/clique/**").hasAuthority(AccountService.CLIQUE_AUTHORITY)
@@ -65,10 +65,9 @@ public class WebSecurityConfig implements ApplicationContextAware {
                 .antMatchers("/api/login", "/api/register/**").permitAll()
                 .and()
 
-                .authorizeRequests()
-                .antMatchers("/**")
-                .authenticated()
 
+                .authorizeRequests()
+                .antMatchers("/**").permitAll()
                 ;
 
         return http.build();

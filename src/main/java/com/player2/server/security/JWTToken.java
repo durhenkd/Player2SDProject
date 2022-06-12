@@ -3,6 +3,7 @@ package com.player2.server.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.Getter;
 import lombok.ToString;
@@ -24,20 +25,30 @@ public class JWTToken {
 
     private String token;
     @ToString.Include private final String subject;
-    @ToString.Include private Date expirationDate;
+    @ToString.Include private final Date expirationDate;
     @ToString.Include private final String issuer;
     @ToString.Include private final List<String> authorities;
+    @ToString.Include private boolean expired;
 
     public JWTToken(String token) {
         this.token = token;
-
-        DecodedJWT decodedJWT = verifier.verify(token);
+        DecodedJWT decodedJWT;
+        try{
+             decodedJWT = verifier.verify(token);
+        } catch (TokenExpiredException e) {
+            this.subject = null;
+            this.expirationDate = null;
+            this.issuer = null;
+            this.authorities = null;
+            this.expired = true;
+            return;
+        }
 
         this.subject = decodedJWT.getSubject();
         this.expirationDate = decodedJWT.getExpiresAt();
         this.issuer = decodedJWT.getIssuer();
-
         this.authorities = decodedJWT.getClaim("roles").asList(String.class);
+        this.expired = false;
     }
 
     public JWTToken(String subject, String issuer, int lifetime) {
@@ -45,6 +56,7 @@ public class JWTToken {
         this.expirationDate = new Date(System.currentTimeMillis() + lifetime);
         this.issuer = issuer;
         this.authorities = List.of();
+        this.expired = false;
         createToken();
 
     }
@@ -59,18 +71,15 @@ public class JWTToken {
         this.expirationDate = new Date(System.currentTimeMillis() + lifetime);
         this.issuer = issuer;
         this.authorities = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        this.expired = false;
         createToken();
     }
 
     public boolean isExpired(){
-        var currentTime = new Date(System.currentTimeMillis());
-        return this.expirationDate.after(currentTime);
+        return expired;
     }
+    public void setExpired(boolean expired) {this.expired = expired;}
 
-    public void refresh(int lifetime){
-        this.expirationDate = new Date(System.currentTimeMillis() + lifetime);
-        createToken();
-    }
 
     private void createToken(){
         this.token = JWT.create()

@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -38,7 +39,6 @@ public class AccountService implements UserDetailsService {
     private static final Pattern usernamePattern = Pattern.compile("^[a-zA-Z0-9_.-]+$");
     private static final Pattern telephonePattern = Pattern.compile("[0-9]+");
     private static final Pattern passwordPattern = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$");
-
 
     private final AccountRepository accountRepository;
     private final PlayerRepository playerRepository;
@@ -75,17 +75,13 @@ public class AccountService implements UserDetailsService {
             throw new UsernameNotFoundException("Couldn't find account " + username);
         }
 
-        log.info("loadByUsername: found account " + username);
-
         Optional<Player> maybePlayer = playerRepository.findByAccount(maybeAccount.get());
         if (maybePlayer.isPresent()) {
-            log.info("loadByUsername: found player " + maybePlayer.get());
             return new User(maybeAccount.get().getUsername(), maybeAccount.get().getPassword(), getPlayerAuthorities());
         }
 
         Optional<Clique> maybeClique = cliqueRepository.findByAccount(maybeAccount.get());
         if (maybeClique.isPresent()) {
-            log.info("loadByUsername: found player " + maybeClique.get());
             return new User(maybeAccount.get().getUsername(), maybeAccount.get().getPassword(), getCliqueAuthorities());
         }
 
@@ -95,8 +91,20 @@ public class AccountService implements UserDetailsService {
 
     //TODO javadoc
     public Clique save(CliqueRegistrationDTO cliqueDTO) throws AlreadyExistsException, InvalidRegisterInputException {
-        Account account = save(new Account(cliqueDTO.getEmail(), cliqueDTO.getTelephone(), cliqueDTO.getUsername(), cliqueDTO.getPassword()));
-        Clique clique = new Clique(account, cliqueDTO.getName(), new ArrayList<>(), new ArrayList<>());
+        Account account = save(
+                new Account(
+                        cliqueDTO.getEmail(),
+                        cliqueDTO.getTelephone(),
+                        cliqueDTO.getUsername(),
+                        cliqueDTO.getPassword()
+                )
+        );
+        Clique clique = new Clique(
+                account,
+                cliqueDTO.getName(),
+                new ArrayList<>(),  //categories
+                new ArrayList<>()   //posts
+        );
 
         clique.getCategories().addAll(getCategoriesFromStringsWithInsert(cliqueDTO.getCategories()));
 
@@ -105,8 +113,22 @@ public class AccountService implements UserDetailsService {
 
     //TODO javadoc
     public Player save(PlayerRegistrationDTO playerDTO) throws AlreadyExistsException, InvalidRegisterInputException {
-        Account account = save(new Account(playerDTO.getEmail(), playerDTO.getTelephone(), playerDTO.getUsername(), playerDTO.getPassword()));
-        Player player = new Player(account, playerDTO.getFirstName(), playerDTO.getLastName(), playerDTO.getGender(), playerDTO.getPicPath(), new ArrayList<>());
+        Account account = save(
+                new Account(
+                        playerDTO.getEmail(),
+                        playerDTO.getTelephone(),
+                        playerDTO.getUsername(),
+                        playerDTO.getPassword()
+                )
+        );
+        Player player = new Player(
+                account,
+                playerDTO.getFirstName(),
+                playerDTO.getLastName(),
+                playerDTO.getGender(),
+                playerDTO.getPicPath(),
+                new ArrayList<>()   //categories
+        );
 
         player.getCategories().addAll(getCategoriesFromStringsWithInsert(playerDTO.getCategories()));
 
@@ -138,12 +160,17 @@ public class AccountService implements UserDetailsService {
         if (!isValidPassword(account.getPassword()))
             throw new InvalidRegisterInputException(account.getPassword() + " is not a valid password.");
 
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        account.setPassword(encoder.encode(account.getPassword()));
 
         return accountRepository.save(account);
     }
 
     //TODO javadoc
     private List<Category> getCategoriesFromStringsWithInsert(List<String> categoryNames) {
+        if (categoryNames == null)
+            return new ArrayList<>();
+
         return categoryNames.stream()
                 .map(catName -> {
 
@@ -252,7 +279,7 @@ public class AccountService implements UserDetailsService {
          * GrantedAuthority is just a container for such string
          * SimpleGrantedAuthority is just an implementation of GrantedAuthority
          */
-        return new HashSet<>(Set.of(new SimpleGrantedAuthority(PLAYER_AUTHORITY)));
+        return List.of(new SimpleGrantedAuthority(PLAYER_AUTHORITY));
     }
 
     /***
@@ -265,6 +292,6 @@ public class AccountService implements UserDetailsService {
          * GrantedAuthority is just a container for such string
          * SimpleGrantedAuthority is just an implementation of GrantedAuthority
          */
-        return new HashSet<>(Set.of(new SimpleGrantedAuthority(CLIQUE_AUTHORITY)));
+        return List.of(new SimpleGrantedAuthority(CLIQUE_AUTHORITY));
     }
 }

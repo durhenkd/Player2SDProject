@@ -23,11 +23,11 @@ class AccountServiceTest {
     @Mock private CliqueRepository cliqueRepository;
     @Mock private CategoryRepository categoryRepository;
 
-    private AccountService accountService;
-
-    @BeforeEach
-    void setUp(){
-        accountService = new AccountService(accountRepository,playerRepository,cliqueRepository,categoryRepository);
-    }
+//    private AccountService accountService;
+//
+//    @BeforeEach
+//    void setUp(){
+//        accountService = new AccountService(accountRepository,playerRepository,cliqueRepository,categoryRepository);
+//    }
 
 }

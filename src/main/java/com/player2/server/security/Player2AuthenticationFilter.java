@@ -2,11 +2,11 @@ package com.player2.server.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.*;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.FilterChain;
@@ -18,17 +18,23 @@ import java.util.Optional;
 
 @Slf4j
 @Component
-public class Player2AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class Player2AuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private final AuthenticationManagerImpl authenticationManager;
 
     @Autowired
     public Player2AuthenticationFilter(AuthenticationManagerImpl authenticationManager) {
+        super("/**");
+        setAuthenticationManager(authenticationManager);
         this.authenticationManager = authenticationManager;
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public Authentication attemptAuthentication(
+            HttpServletRequest request,
+            HttpServletResponse response )
+            throws AuthenticationException
+    {
 
         log.info("Authentication request, type: " + request.getAuthType());
 
@@ -42,7 +48,7 @@ public class Player2AuthenticationFilter extends UsernamePasswordAuthenticationF
                     .findFirst();
 
             if(accessTokenCookie.isPresent() && refreshTokenCookie.isPresent()){
-                return authenticationManager.authenticate(
+                return this.authenticationManager.authenticate(
                         new JWTAuthenticationToken(
                            new JWTToken(accessTokenCookie.get().getValue()),
                            new JWTToken(refreshTokenCookie.get().getValue())
@@ -51,11 +57,13 @@ public class Player2AuthenticationFilter extends UsernamePasswordAuthenticationF
         } //if (cookies != null && cookies.length >= 2)
 
 
-        // TODO settle on a method for credentials provider
-//        var authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        log.info("Trying to log in: " + username + " pass: " + password);
+        var authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
 
         try {
-            return authenticationManager.authenticate(authenticationToken);
+            return this.authenticationManager.authenticate(authenticationToken);
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
@@ -102,6 +110,7 @@ public class Player2AuthenticationFilter extends UsernamePasswordAuthenticationF
         response.addCookie(new Cookie("access_token", access_token.toString()));
         response.addCookie(new Cookie("refresh_token", refresh_token.toString()));
     }
+
 
 }
 

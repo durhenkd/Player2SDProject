@@ -7,7 +7,7 @@ import lombok.ToString;
 
 import javax.persistence.*;
 
-@Entity
+@Entity(name = "p2_match")
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor

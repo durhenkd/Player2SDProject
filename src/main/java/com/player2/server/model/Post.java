@@ -4,7 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 
-@Entity
+@Entity(name = "p2_post")
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor

@@ -8,7 +8,7 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.util.List;
 
-@Entity
+@Entity(name = "p2_clique")
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor

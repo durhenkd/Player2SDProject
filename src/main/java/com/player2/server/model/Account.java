@@ -6,7 +6,7 @@ import org.hibernate.Hibernate;
 import javax.persistence.*;
 import java.util.Objects;
 
-@Entity
+@Entity(name = "p2_account")
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor

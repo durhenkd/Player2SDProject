@@ -24,7 +24,9 @@ public class JWTTokenAuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         if (!this.supports(authentication.getClass()))
-            throw new AuthenticationServiceException(this.getClass().getSimpleName() + " does not support " + authentication.getClass());
+            throw new AuthenticationServiceException(
+                    this.getClass().getSimpleName() + " does not support " + authentication.getClass()
+            );
 
         JWTAuthenticationToken token = (JWTAuthenticationToken) authentication;
 

@@ -9,7 +9,7 @@ import org.hibernate.Hibernate;
 import javax.persistence.*;
 import java.util.Objects;
 
-@Entity
+@Entity(name = "p2_category")
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor

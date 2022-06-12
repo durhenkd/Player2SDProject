@@ -16,8 +16,10 @@ public class AuthenticationManagerImpl implements AuthenticationManager {
     private final JWTTokenAuthenticationProvider jwtTokenAuthenticationProvider;
 
     @Autowired
-    public AuthenticationManagerImpl(DaoAuthenticationProvider authenticationProvider,
-                                     JWTTokenAuthenticationProvider jwtTokenAuthenticationProvider) {
+    public AuthenticationManagerImpl(
+            DaoAuthenticationProvider authenticationProvider,
+            JWTTokenAuthenticationProvider jwtTokenAuthenticationProvider
+    ) {
         this.daoAuthenticationProvider = authenticationProvider;
         this.jwtTokenAuthenticationProvider = jwtTokenAuthenticationProvider;
     }

@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -46,31 +47,29 @@ public class WebSecurityConfig implements ApplicationContextAware {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+
         http    .cors().and().csrf().disable()
 
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
 
-                .authorizeRequests()
-                .antMatchers("/api/login", "/api/register/**").permitAll()
-                .anyRequest().authenticated()
-                .and()
-
-                .formLogin()
-                .loginPage("/login")
-                .permitAll()
-                .and()
-
-                .logout()
-                .permitAll()
-                .and()
-
-                .addFilter( applicationContext.getBean(Player2AuthenticationFilter.class) )
+                .addFilterBefore(applicationContext.getBean(Player2AuthenticationFilter.class), UsernamePasswordAuthenticationFilter.class)
 //                .addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
-                .antMatchers("/api/user/**").hasAuthority(AccountService.PLAYER_AUTHORITY)
-                .antMatchers("/api/admin/**").hasAuthority(AccountService.CLIQUE_AUTHORITY);
+                .antMatchers("/api/player/**").hasAuthority(AccountService.PLAYER_AUTHORITY)
+                .antMatchers("/api/clique/**").hasAuthority(AccountService.CLIQUE_AUTHORITY)
+                .and()
+
+                .authorizeRequests()
+                .antMatchers("/api/login", "/api/register/**").permitAll()
+                .and()
+
+                .authorizeRequests()
+                .antMatchers("/**")
+                .authenticated()
+
+                ;
 
         return http.build();
     }

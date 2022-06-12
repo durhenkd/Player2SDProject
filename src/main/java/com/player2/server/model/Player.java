@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.util.List;
 import java.util.Objects;
 
-@Entity
+@Entity(name = "p2_player")
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor

@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface CliqueRepository extends JpaRepository<Clique, Long> {
 
     Optional<Clique> findByAccount(Account account);
-
+    boolean existsByAccount(Account account);
 }

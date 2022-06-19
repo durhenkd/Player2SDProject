@@ -11,6 +11,7 @@ import com.player2.server.persistence.CategoryRepository;
 import com.player2.server.persistence.CliqueRepository;
 import com.player2.server.persistence.PlayerRepository;
 import com.player2.server.web.CliqueRegistrationDTO;
+import com.player2.server.web.LoginInformationDTO;
 import com.player2.server.web.PlayerRegistrationDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,14 +100,19 @@ public class AccountService implements UserDetailsService {
                         cliqueDTO.getPassword()
                 )
         );
+        Optional<Category> maybeCategory = categoryRepository.findByName(cliqueDTO.getCategory());
+        Category category = null;
+        if (maybeCategory.isEmpty())
+            category = categoryRepository.save(new Category(cliqueDTO.getCategory()));
+        else
+            category = maybeCategory.get();
+
         Clique clique = new Clique(
                 account,
                 cliqueDTO.getName(),
-                new ArrayList<>(),  //categories
+                category,
                 new ArrayList<>()   //posts
         );
-
-        clique.getCategories().addAll(getCategoriesFromStringsWithInsert(cliqueDTO.getCategories()));
 
         return cliqueRepository.save(clique);
     }
@@ -127,12 +133,24 @@ public class AccountService implements UserDetailsService {
                 playerDTO.getLastName(),
                 playerDTO.getGender(),
                 playerDTO.getPicPath(),
-                new ArrayList<>()   //categories
+                new ArrayList<>()   //follows
         );
 
-        player.getCategories().addAll(getCategoriesFromStringsWithInsert(playerDTO.getCategories()));
-
         return playerRepository.save(player);
+    }
+
+    public LoginInformationDTO getLoginInformation(String username){
+        Optional<Account> maybeAccount = accountRepository.findByUsername(username);
+        if(maybeAccount.isEmpty()) return new LoginInformationDTO(-1, "", false);
+
+        Account account = maybeAccount.get();
+        if(playerRepository.existsByAccount(account))
+            return new LoginInformationDTO(account.getId().intValue(), account.getUsername(), false);
+
+        if(cliqueRepository.existsByAccount(account))
+            return new LoginInformationDTO(account.getId().intValue(), account.getUsername(), true);
+
+        return new LoginInformationDTO(-1, "Internal server error", false);
     }
 
     /***

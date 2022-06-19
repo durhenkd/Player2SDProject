@@ -43,20 +43,20 @@ public class Player {
     private String picPath;
 
     @ManyToMany
-    private List<Category> categories;
+    private List<Clique> follows;
 
     public Player(Account account,
                   String firstName,
                   String lastName,
                   Gender gender,
                   String picPath,
-                  List<Category> categories) {
+                  List<Clique> follows) {
         this.account = account;
         this.firstName = firstName;
         this.lastName = lastName;
         this.gender = gender;
         this.picPath = picPath;
-        this.categories = categories;
+        this.follows = follows;
     }
 
     @Override

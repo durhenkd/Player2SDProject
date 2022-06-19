@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .outline-hover-fill {
+    @apply transition ease-in-out duration-200
+    px-5 py-3 bg-transparent font-bold rounded-xl  text-white outline-[#C60A5B] outline outline-2
+    hover:bg-[#C60A5B] hover:outline-transparent  
+    focus:ring-0 focus:border-transparent;
+  }
+
+  .text-hover-emph {
+    @apply transition ease-in-out duration-200 py-2 px-6 bg-transparent font-bold rounded-xl
+      text-neutral-400 
+     hover:text-white
+     focus:ring-0 focus:border-transparent;
+  }
+
+  .fill-hover-outline {
+    @apply transition ease-in-out duration-200 px-5 py-3 bg-transparent font-bold rounded-xl
+    bg-[#C60A5B] text-white outline outline-transparent outline-2
+    hover:bg-transparent hover:outline-[#C60A5B]
+    focus:ring-0 focus:border-transparent;
+  }
+
+  .outline-hover-fill-neutral {
+    @apply transition ease-in-out duration-200 placeholder:text-neutral-200
+    px-5 py-3 bg-transparent font-bold rounded-xl  text-white outline-white outline outline-2
+    hover:outline-transparent hover:bg-white hover:text-neutral-900 hover:placeholder:text-neutral-500
+    focus:bg-white focus:text-neutral-900  focus:placeholder:text-neutral-500 focus:ring-0 focus:border-transparent;
+  }
+}

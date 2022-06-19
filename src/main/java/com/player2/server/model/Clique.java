@@ -28,16 +28,16 @@ public class Clique {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @ManyToMany
-    private List<Category> categories;
+    @ManyToOne
+    private Category category;
 
     @OneToMany
     private List<Post> posts;
 
-    public Clique(Account account, String name, List<Category> categories, List<Post> posts) {
+    public Clique(Account account, String name, Category category, List<Post> posts) {
         this.account = account;
         this.name = name;
-        this.categories = categories;
+        this.category = category;
         this.posts = posts;
     }
 }

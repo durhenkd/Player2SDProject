@@ -48,10 +48,10 @@ public class Player2AuthenticationFilter extends AbstractAuthenticationProcessin
             HttpServletResponse response)
             throws AuthenticationException {
 
-        Authentication toReturn = tryAuthenticateCookies(request, response);
+        Authentication toReturn = tryAuthenticateParameters(request, response);
         if (toReturn != null) return toReturn;
 
-        return tryAuthenticateParameters(request, response);
+        return tryAuthenticateCookies(request, response);
     }
 
     @Override
@@ -116,9 +116,13 @@ public class Player2AuthenticationFilter extends AbstractAuthenticationProcessin
 
         try {
 
-            Authentication toReturn = null;
+            Authentication toReturn;
             String username = request.getParameter("username");
             String password = request.getParameter("password");
+
+            if(username == null || username.equals("") || password == null || password.equals("")){
+                return null;
+            }
 
             var authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
 
@@ -147,7 +151,6 @@ public class Player2AuthenticationFilter extends AbstractAuthenticationProcessin
             log.error(e.getMessage());
             throw e;
         }
-
     }
 
 }

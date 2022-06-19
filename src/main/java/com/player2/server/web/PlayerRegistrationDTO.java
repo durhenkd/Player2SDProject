@@ -3,7 +3,6 @@ package com.player2.server.web;
 import com.player2.server.model.Gender;
 import lombok.Value;
 
-import java.util.List;
 
 @Value
 public class PlayerRegistrationDTO {
@@ -16,5 +15,4 @@ public class PlayerRegistrationDTO {
     String lastName;
     Gender gender;
     String picPath;
-    List<String> categories;
 }

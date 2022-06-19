@@ -12,6 +12,6 @@ public class CliqueRegistrationDTO {
     String telephone;
     String password;
     String name;
-    List<String> categories;
+    String category;
 
 }

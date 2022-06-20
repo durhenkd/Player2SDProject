@@ -2,14 +2,12 @@ package com.player2.server.web;
 
 import com.player2.server.bussiness.PlayerService;
 import com.player2.server.model.Clique;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -55,6 +53,32 @@ public class PlayerController {
     public ResponseEntity<?> follow(@PathVariable("id") int id) {
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         playerService.followClique(name, id);
+        return ResponseEntity.ok(null);
+    }
+
+    @GetMapping(path = "match")
+    public ResponseEntity<List<MatchReponseDTO>> getMatches(){
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(playerService.getMatches(name));
+    }
+
+    @GetMapping(path = "match/new")
+    public ResponseEntity<MatchReponseDTO> getPotentialMatch(){
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(playerService.getPotentialMatch(name).get());
+    }
+
+    @PostMapping(path = "match/{id}/accept")
+    public ResponseEntity<?> acceptMatch(@PathVariable("id") int id, @RequestBody String postIt){
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        playerService.acceptMatch(name, id, postIt);
+        return ResponseEntity.ok(null);
+    }
+
+    @PostMapping(path = "match/{id}/refuse")
+    public ResponseEntity<?> refuseMatch(@PathVariable("id") int id){
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        playerService.refuseMatch(name, id, "");
         return ResponseEntity.ok(null);
     }
 

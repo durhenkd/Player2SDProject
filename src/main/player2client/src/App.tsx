@@ -13,6 +13,7 @@ import WelcomeAdmin from "./clique/WelcomeAdmin";
 import Post from "./clique/Post";
 import Cliques from "./user/Cliques";
 import Matches from "./user/Matches";
+import NewMatch from "./user/NewMatch";
 
 
 const App = () => {
@@ -28,6 +29,7 @@ const App = () => {
             <Route path="/player" element={ <WelcomeUser/> }/>
             <Route path="/player/cliques" element={ <Cliques/> }/>
             <Route path="/player/matches" element={ <Matches/> }/>
+            <Route path="/player/matches/new" element={ <NewMatch/> }/>
             <Route path="/login" element={<LogIn />} />
             <Route path="/register" element={<UserRegister />} />
 

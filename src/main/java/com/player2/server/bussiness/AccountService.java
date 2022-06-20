@@ -2,14 +2,8 @@ package com.player2.server.bussiness;
 
 import com.player2.server.exception.AlreadyExistsException;
 import com.player2.server.exception.InvalidRegisterInputException;
-import com.player2.server.model.Account;
-import com.player2.server.model.Category;
-import com.player2.server.model.Clique;
-import com.player2.server.model.Player;
-import com.player2.server.persistence.AccountRepository;
-import com.player2.server.persistence.CategoryRepository;
-import com.player2.server.persistence.CliqueRepository;
-import com.player2.server.persistence.PlayerRepository;
+import com.player2.server.model.*;
+import com.player2.server.persistence.*;
 import com.player2.server.web.CliqueRegistrationDTO;
 import com.player2.server.web.LoginInformationDTO;
 import com.player2.server.web.PlayerRegistrationDTO;
@@ -27,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,16 +38,20 @@ public class AccountService implements UserDetailsService {
     private final PlayerRepository playerRepository;
     private final CliqueRepository cliqueRepository;
     private final CategoryRepository categoryRepository;
+    private final MatchRepository matchRepository;
 
     @Autowired
     public AccountService(AccountRepository accountRepository,
                           PlayerRepository playerRepository,
                           CliqueRepository cliqueRepository,
-                          CategoryRepository categoryRepository) {
+                          CategoryRepository categoryRepository,
+                          MatchRepository matchRepository
+    ) {
         this.accountRepository = accountRepository;
         this.playerRepository = playerRepository;
         this.cliqueRepository = cliqueRepository;
         this.categoryRepository = categoryRepository;
+        this.matchRepository = matchRepository;
     }
 
 
@@ -90,7 +87,6 @@ public class AccountService implements UserDetailsService {
         throw new UsernameNotFoundException("found account, but couldn't find associated user");
     }
 
-
     /**
      *
      * @param cliqueDTO data transform object received from the client
@@ -108,7 +104,7 @@ public class AccountService implements UserDetailsService {
                 )
         );
         Optional<Category> maybeCategory = categoryRepository.findByName(cliqueDTO.getCategory());
-        Category category = null;
+        Category category;
         if (maybeCategory.isEmpty())
             category = categoryRepository.save(new Category(cliqueDTO.getCategory()));
         else
@@ -150,8 +146,12 @@ public class AccountService implements UserDetailsService {
                 new ArrayList<>()   //follows
         );
 
-        return playerRepository.save(player);
+        player = playerRepository.save(player);
+        createMatches(player);
+        return player;
     }
+
+
 
     /**
      * Provides basic account information (meant to be used as response for login)
@@ -205,19 +205,18 @@ public class AccountService implements UserDetailsService {
         return accountRepository.save(account);
     }
 
-//    //TODO javadoc
-//    private List<Category> getCategoriesFromStringsWithInsert(List<String> categoryNames) {
-//        if (categoryNames == null)
-//            return new ArrayList<>();
-//
-//        return categoryNames.stream()
-//                .map(catName -> {
-//
-//                    Optional<Category> maybeCategory = categoryRepository.findByName(catName);
-//                    return maybeCategory.orElseGet(() -> categoryRepository.save(new Category(catName)));
-//
-//                }).collect(Collectors.toList());
-//    }
+    /**
+     * Create the Matches objects
+     * @param player the player to create matches for
+     */
+    private void createMatches(Player player) {
+        List<Player> all = playerRepository.findAll();
+        for(Player p: all){
+            if(p.equals(player)) continue;
+            Match m = new Match(player, p);
+            matchRepository.save(m);
+        }
+    }
 
     /**
      * This function checks if the string is an email.</br>

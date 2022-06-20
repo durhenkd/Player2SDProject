@@ -2,7 +2,7 @@ import * as React from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { bindActionCreators } from "redux";
-import { spring_axios } from "../axios";
+import { login, spring_axios } from "../axios";
 import { actionCreators } from "../state";
 
 type UserRegisterFormState = {
@@ -34,7 +34,7 @@ const UserRegister = () => {
     gender: "Unspecified",
     telephone: "",
     picPath: "",
-    bio: ""
+    bio: "",
   });
 
   const formHandler = (event: React.FormEvent) => {
@@ -75,8 +75,10 @@ const UserRegister = () => {
     spring_axios
       .post("/register/player", formState)
       .then((res: any) => {
-        userLogin(res.data.name, res.data.id);
-        navigate("/player");
+        login(formState.username, formState.password).then((res) => {
+          userLogin(res.name, res.id);
+          navigate("/player");
+        });
       })
       .catch((err: any) => {
         setError(err.message);
@@ -93,7 +95,6 @@ const UserRegister = () => {
           setError("");
         }}
       >
-        
         <input
           className="grow w-full outline-hover-fill-neutral"
           type="text"
@@ -201,11 +202,10 @@ const UserRegister = () => {
         </div>
         <textarea
           className="grow w-full outline-hover-fill-neutral"
-          
           placeholder="Your Bio"
           value={formState.bio}
           onChange={(v) => {
-            setFormState({ ...formState, bio: v.target.value })
+            setFormState({ ...formState, bio: v.target.value });
           }}
         />
         <button onClick={() => {}} className="grow w-full fill-hover-outline">

@@ -36,7 +36,6 @@ public class CliqueService {
     }
 
     /**
-     * TODO: this
      * @param username
      * @param dto
      */

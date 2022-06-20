@@ -13,7 +13,7 @@ const Post = () => {
   const { data, isPending, error } = useGet<string>(
     isAdmin
       ? `/clique/post/${post_id}`
-      : `/player/clique/${clique_id}/posts/${clique_id}`,
+      : `/player/clique/${clique_id}/posts/${post_id}`,
     ""
   );
 

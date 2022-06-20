@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { bindActionCreators } from "redux";
-import { spring_axios } from "../axios";
+import { login, spring_axios } from "../axios";
 import { actionCreators } from "../state";
 
 
@@ -71,8 +71,10 @@ const CliqueRegister = () => {
     spring_axios
       .post("/register/clique", formState)
       .then((res: any) => {
-        adminLogin(res.data.name, res.data.id);
-        navigate("/player");
+        login(formState.username, formState.password).then((res) => {
+          adminLogin(res.name, res.id);
+          navigate("/clique");
+        });
       })
       .catch((err: any) => {
         setError(err.message);

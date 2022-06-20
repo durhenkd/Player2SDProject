@@ -9,6 +9,8 @@ export type Post = {
   datetime: string;
   title: string;
   contentPath: string;
+  clique_id: number;
+  clique_name: string;
 };
 
 const Posts = () => {
@@ -34,7 +36,7 @@ const Posts = () => {
       ) : (
         data.map((p) => (
           <Link className="w-full" to={`/clique/${clique_id}/posts/${p.id}`}>
-            <PostTitle key={p.id} title={p.title} datetime={p.datetime} />
+            <PostTitle key={p.id} title={p.title} datetime={p.datetime} clique={p.clique_name} />
           </Link>
         ))
       )}

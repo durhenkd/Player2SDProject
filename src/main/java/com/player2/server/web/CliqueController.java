@@ -37,7 +37,7 @@ public class CliqueController {
     }
 
     @GetMapping(path = "post")
-    public ResponseEntity<List<Post>> getAllPosts(){
+    public ResponseEntity<List<PostResponseDTO>> getAllPosts(){
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(cliqueService.getAllPosts(name));
     }

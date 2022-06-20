@@ -4,6 +4,7 @@ import com.player2.server.model.Clique;
 import com.player2.server.model.Post;
 import com.player2.server.persistence.CliqueRepository;
 import com.player2.server.persistence.PostRepository;
+import com.player2.server.web.PostResponseDTO;
 import com.player2.server.web.PostSubmitDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.jni.Directory;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -89,14 +91,18 @@ public class CliqueService {
      * @param username
      * @return
      */
-    public List<Post> getAllPosts(String username){
+    public List<PostResponseDTO> getAllPosts(String username){
         Optional<Clique> maybeClique = cliqueRepository.findByAccount_Username(username);
         if (maybeClique.isEmpty()) {
             log.error("getAllPosts: Account " + username + " does not exist");
             return new ArrayList<>();
         }
+        Clique clique = maybeClique.get();
         log.info("getAllPosts: return all posts for: " + username);
-        return maybeClique.get().getPosts();
+        return clique.getPosts()
+                .stream()
+                .map(e -> new PostResponseDTO(e,clique.getName(),clique.getId().intValue()))
+                .collect(Collectors.toList());
     }
 
     public String getPost(String username, int id){

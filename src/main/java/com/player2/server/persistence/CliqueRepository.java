@@ -11,4 +11,5 @@ public interface CliqueRepository extends JpaRepository<Clique, Long> {
 
     Optional<Clique> findByAccount(Account account);
     boolean existsByAccount(Account account);
+    Optional<Clique> findByAccount_Username(String username);
 }

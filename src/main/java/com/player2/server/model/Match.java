@@ -44,12 +44,12 @@ public class Match {
     @ToString.Include
     @Setter
     @Column(nullable = false)
-    private boolean accepted1;
+    private int accepted1;
 
     @ToString.Include
     @Setter
     @Column(nullable = false)
-    private boolean accepted2;
+    private int accepted2;
 
     public Match(Player player1, Player player2) {
         this.player1 = player1;
@@ -57,7 +57,7 @@ public class Match {
         this.postIt1 = null;
         this.postIt2 = null;
         this.score = 0;
-        this.accepted1 = false;
-        this.accepted2 = false;
+        this.accepted1 = 0;
+        this.accepted2 = 0;
     }
 }

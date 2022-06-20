@@ -75,7 +75,7 @@ const LogIn = () => {
             setFormState({ ...formState, password: v.target.value }); //! making a copy then overwriting
           }}
         />
-        {error && <h4 className="text-red-700 text-lg">{error}</h4>}
+        {error && <p className="text-red-700 text-lg">{error}</p>}
         <button
           onClick={() => {}}
           className="grow w-full fill-hover-outline"

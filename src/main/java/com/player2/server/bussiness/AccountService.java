@@ -90,7 +90,14 @@ public class AccountService implements UserDetailsService {
         throw new UsernameNotFoundException("found account, but couldn't find associated user");
     }
 
-    //TODO javadoc
+
+    /**
+     *
+     * @param cliqueDTO data transform object received from the client
+     * @return The saved Clique object
+     * @throws AlreadyExistsException if the account already exists
+     * @throws InvalidRegisterInputException if the input is invalid
+     */
     public Clique save(CliqueRegistrationDTO cliqueDTO) throws AlreadyExistsException, InvalidRegisterInputException {
         Account account = save(
                 new Account(
@@ -117,7 +124,13 @@ public class AccountService implements UserDetailsService {
         return cliqueRepository.save(clique);
     }
 
-    //TODO javadoc
+    /**
+     *
+     * @param playerDTO data transform object received from the client
+     * @return The saved Player object
+     * @throws AlreadyExistsException if the account already exists
+     * @throws InvalidRegisterInputException if the input is invalid
+     */
     public Player save(PlayerRegistrationDTO playerDTO) throws AlreadyExistsException, InvalidRegisterInputException {
         Account account = save(
                 new Account(
@@ -133,12 +146,20 @@ public class AccountService implements UserDetailsService {
                 playerDTO.getLastName(),
                 playerDTO.getGender(),
                 playerDTO.getPicPath(),
+                playerDTO.getBio(),
                 new ArrayList<>()   //follows
         );
 
         return playerRepository.save(player);
     }
 
+    /**
+     * Provides basic account information (meant to be used as response for login)
+     * @param username the username of the account
+     * @return an object containing the Account id, username, and role
+     * @see LoginInformationDTO
+     * @see Account
+     */
     public LoginInformationDTO getLoginInformation(String username){
         Optional<Account> maybeAccount = accountRepository.findByUsername(username);
         if(maybeAccount.isEmpty()) return new LoginInformationDTO(-1, "", false);
@@ -184,19 +205,19 @@ public class AccountService implements UserDetailsService {
         return accountRepository.save(account);
     }
 
-    //TODO javadoc
-    private List<Category> getCategoriesFromStringsWithInsert(List<String> categoryNames) {
-        if (categoryNames == null)
-            return new ArrayList<>();
-
-        return categoryNames.stream()
-                .map(catName -> {
-
-                    Optional<Category> maybeCategory = categoryRepository.findByName(catName);
-                    return maybeCategory.orElseGet(() -> categoryRepository.save(new Category(catName)));
-
-                }).collect(Collectors.toList());
-    }
+//    //TODO javadoc
+//    private List<Category> getCategoriesFromStringsWithInsert(List<String> categoryNames) {
+//        if (categoryNames == null)
+//            return new ArrayList<>();
+//
+//        return categoryNames.stream()
+//                .map(catName -> {
+//
+//                    Optional<Category> maybeCategory = categoryRepository.findByName(catName);
+//                    return maybeCategory.orElseGet(() -> categoryRepository.save(new Category(catName)));
+//
+//                }).collect(Collectors.toList());
+//    }
 
     /**
      * This function checks if the string is an email.</br>

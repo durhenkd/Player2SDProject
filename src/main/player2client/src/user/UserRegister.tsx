@@ -14,6 +14,7 @@ type UserRegisterFormState = {
   gender: string;
   telephone: string;
   picPath: string;
+  bio: string;
 };
 
 const UserRegister = () => {
@@ -33,6 +34,7 @@ const UserRegister = () => {
     gender: "Unspecified",
     telephone: "",
     picPath: "",
+    bio: ""
   });
 
   const formHandler = (event: React.FormEvent) => {
@@ -83,7 +85,7 @@ const UserRegister = () => {
   };
 
   return (
-    <div className="w-1/3 h-full flex flex-col flex-wrap justify-center items-center">
+    <div className="w-1/3 flex flex-col flex-wrap justify-center items-center">
       <form
         onSubmit={formHandler}
         className="w-full flex flex-col mb-9 gap-4"
@@ -156,9 +158,9 @@ const UserRegister = () => {
           }}
         />
         {confPass !== formState.password && (
-          <h4 className="text-red-700 text-lg">Passwords don't match!</h4>
+          <p className="text-red-700 text-lg">Passwords don't match!</p>
         )}
-        {error && <h4 className="text-red-700 text-lg ">{error}</h4>}
+        {error && <p className="text-red-700 text-lg ">{error}</p>}
         <div className="flex flex-row text-white font-bold text-lg my-2 gap-6 self-center">
           <label className="grow ">
             <input
@@ -197,6 +199,15 @@ const UserRegister = () => {
             Other
           </label>
         </div>
+        <textarea
+          className="grow w-full outline-hover-fill-neutral"
+          
+          placeholder="Your Bio"
+          value={formState.bio}
+          onChange={(v) => {
+            setFormState({ ...formState, bio: v.target.value })
+          }}
+        />
         <button onClick={() => {}} className="grow w-full fill-hover-outline">
           Register
         </button>

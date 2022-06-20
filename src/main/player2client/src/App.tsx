@@ -10,6 +10,9 @@ import NewPost from "./clique/NewPost";
 import Posts from "./clique/Posts";
 import WelcomeUser from "./user/WelcomeUser";
 import WelcomeAdmin from "./clique/WelcomeAdmin";
+import Post from "./clique/Post";
+import Cliques from "./user/Cliques";
+import Matches from "./user/Matches";
 
 
 const App = () => {
@@ -23,12 +26,15 @@ const App = () => {
             <Route path="/" element={<Welcome/>}/>
 
             <Route path="/player" element={ <WelcomeUser/> }/>
+            <Route path="/player/cliques" element={ <Cliques/> }/>
+            <Route path="/player/matches" element={ <Matches/> }/>
             <Route path="/login" element={<LogIn />} />
             <Route path="/register" element={<UserRegister />} />
 
             <Route path="/clique" element={<WelcomeAdmin/>}/>
             <Route path="/clique/new" element={<NewPost/>}/>
-            <Route path="/clique/posts" element={ <Posts/> } />
+            <Route path="/clique/:clique_id/posts/" element={ <Posts/> } />
+            <Route path="/clique/:clique_id/posts/:post_id" element={ <Post/> } />
             <Route path="/register/clique" element={<CliqueRegister />} />
 
             <Route path="*" element={<NoMatch />} />

@@ -65,7 +65,6 @@ public class WebSecurityConfig implements ApplicationContextAware {
                 .antMatchers("/api/login", "/api/register/**").permitAll()
                 .and()
 
-
                 .authorizeRequests()
                 .antMatchers("/**").permitAll()
                 ;

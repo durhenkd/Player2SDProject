@@ -15,4 +15,5 @@ public class PlayerRegistrationDTO {
     String lastName;
     Gender gender;
     String picPath;
+    String bio;
 }

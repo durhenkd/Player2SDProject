@@ -92,8 +92,12 @@ public class Player2AuthenticationFilter extends AbstractAuthenticationProcessin
                 );
 
                 if (toReturn instanceof JWTAuthenticationToken token) {
-                    response.addCookie(new Cookie("access_token", token.getAccessToken().getToken()));
-                    response.addCookie(new Cookie("refresh_token", token.getRefreshToken().getToken()));
+                    var accessCookie = new Cookie("access_token", token.getAccessToken().getToken());
+                    accessCookie.setPath("/");
+                    var refreshCookie = new Cookie("refresh_token", token.getRefreshToken().getToken());
+                    refreshCookie.setPath("/");
+                    response.addCookie(accessCookie);
+                    response.addCookie(refreshCookie);
                 }
 
             } //if (accessTokenCookie.isPresent() && refreshTokenCookie.isPresent())
@@ -142,9 +146,12 @@ public class Player2AuthenticationFilter extends AbstractAuthenticationProcessin
                     JWTToken.JWT_REFRESH_TOKEN_LIFETIME
             );
 
-
-            response.addCookie(new Cookie("access_token", access_token.getToken()));
-            response.addCookie(new Cookie("refresh_token", refresh_token.getToken()));
+            var accessCookie = new Cookie("access_token", access_token.getToken());
+            accessCookie.setPath("/");
+            var refreshCookie = new Cookie("refresh_token", refresh_token.getToken());
+            refreshCookie.setPath("/");
+            response.addCookie(accessCookie);
+            response.addCookie(refreshCookie);
 
             return toReturn;
         } catch (Exception e) {

@@ -24,23 +24,28 @@ public class Player {
 
     @ToString.Include
     @Setter
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String firstName;
 
     @ToString.Include
     @Setter
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String lastName;
 
     @ToString.Include
     @Setter
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private Gender gender;
 
     @ToString.Include
     @Setter
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String picPath;
+
+    @ToString.Include
+    @Setter
+    @Column(nullable = false)
+    private String bio;
 
     @ManyToMany
     private List<Clique> follows;
@@ -50,6 +55,7 @@ public class Player {
                   String lastName,
                   Gender gender,
                   String picPath,
+                  String bio,
                   List<Clique> follows) {
         this.account = account;
         this.firstName = firstName;
@@ -57,6 +63,7 @@ public class Player {
         this.gender = gender;
         this.picPath = picPath;
         this.follows = follows;
+        this.bio = bio;
     }
 
     @Override

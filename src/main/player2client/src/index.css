@@ -30,4 +30,17 @@
     hover:outline-transparent hover:bg-white hover:text-neutral-900 hover:placeholder:text-neutral-500
     focus:bg-white focus:text-neutral-900  focus:placeholder:text-neutral-500 focus:ring-0 focus:border-transparent;
   }
+
+  .text-area {
+    @apply  w-full h-full bg-black/50 text-white border-transparent focus:ring-0 focus:border-transparent
+  }
+
+  h1 {  @apply text-4xl }
+  h2 {  @apply text-3xl }
+  h3 {  @apply text-2xl }
+  h4 {  @apply text-xl  }
+  h5 {  @apply text-lg  }
+  ul {  @apply list-disc }
+  ol {  @apply list-decimal }
+  
 }

@@ -153,9 +153,9 @@ const CliqueRegister = () => {
           }}
         />
         {confPass !== formState.password && (
-          <h4 className="text-red-700 text-lg">Passwords don't match!</h4>
+          <p className="text-red-700 text-lg">Passwords don't match!</p>
         )}
-        {error && <h4 className="text-red-700 text-lg">{error}</h4>}
+        {error && <p className="text-red-700 text-lg">{error}</p>}
         <button onClick={() => {}} className="grow w-full fill-hover-outline">
           Register
         </button>

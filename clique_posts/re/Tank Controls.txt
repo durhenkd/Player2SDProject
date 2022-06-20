@@ -1,0 +1,12 @@
+# ***Tank Controls***
+&nbsp;
+
+
+
+The first game introduced a control scheme that the player community has come to refer to as "tank controls" to the series. In a game with tank controls, players control movement relative to the position of the player character, rather than relative to the fixed virtual camera from which the player views the current scene.[40] Pressing up (for example on a D-pad, analog stick, or cursor movement keys) on the game controller moves the character in the direction being faced, pressing down backpedals, and left and right rotates the character.[40] This can feel counter-intuitive when the character is facing the camera, as the controls are essentially reversed in this state. This differs from many 3D games, in which characters move in the direction the player pushes the controls from the perspective of the camera.[40] Some critics have posited that the control scheme is intentionally clumsy, meant to enhance stress and exacerbate difficulty.[41]
+&nbsp;
+
+
+&nbsp;
+
+While the first three entries in the series featured this control scheme, the third, Resident Evil 3: Nemesis, saw some action-oriented additions. These included a 180 degree turn and dodge command that, according to GameSpot, "hinted at a new direction that the series would go in." Later games in the series, like Resident Evil 4, would feature a more fluid over-the-shoulder third-person camera instead of a fixed camera for each room, while Resident Evil 7 and Resident Evil Village are played from the first-person perspective

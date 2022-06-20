@@ -23,10 +23,16 @@ public class Post {
     @ToString.Include
     @Setter
     @Column(nullable = false)
+    private String title;
+
+    @ToString.Include
+    @Setter
+    @Column(nullable = false)
     private String contentPath;
 
-    public Post(String datetime, String contentPath) {
+    public Post(String datetime, String contentPath, String title) {
         this.datetime = datetime;
         this.contentPath = contentPath;
+        this.title = title;
     }
 }
